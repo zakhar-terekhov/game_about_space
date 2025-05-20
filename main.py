@@ -21,11 +21,11 @@ async def blink(canvas, row, column, symbol="*"):
 def draw(canvas):
     row, column = (5, 20)
     canvas.border()
-    canvas.refresh()
-    coroutine = blink(canvas, row, column)
+    coroutines = [blink(canvas, row, column) for column in range(column, 30, 2)]
     while True:
         canvas.refresh()
-        coroutine.send(None)
+        for coroutine in coroutines:
+            coroutine.send(None)
         time.sleep(1)
     # canvas.addstr(row, column, "*",curses.A_DIM)
     # time.sleep(2)
