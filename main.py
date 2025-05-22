@@ -4,10 +4,12 @@ import random
 import time
 
 
-async def blink(canvas, row, column, symbol, repeat=3):
+async def blink(canvas, row, column, symbol):
     while True:
-        canvas.addstr(row, column, symbol, curses.A_DIM)
-        await asyncio.sleep(0)
+        repeat = random.randint(1,10)
+        for _ in range(repeat):
+            canvas.addstr(row, column, symbol, curses.A_DIM)
+            await asyncio.sleep(0)
         for _ in range(repeat):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
@@ -35,7 +37,7 @@ def draw(canvas, amount=200):
         canvas.refresh()
         for coroutine in coroutines:
             coroutine.send(None)
-        time.sleep(0.5)
+        time.sleep(0.3)
 
 
 def main():
