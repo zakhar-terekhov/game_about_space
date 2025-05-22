@@ -1,9 +1,10 @@
 import asyncio
 import curses
+import random
 import time
 
 
-async def blink(canvas, row, column, symbol="*", repeat=3):
+async def blink(canvas, row, column, symbol, repeat=3):
     while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
         await asyncio.sleep(0)
@@ -18,10 +19,18 @@ async def blink(canvas, row, column, symbol="*", repeat=3):
             await asyncio.sleep(0)
 
 
-def draw(canvas):
-    row, column = (5, 20)
+def draw(canvas, amount=200):
+    height, width = curses.window.getmaxyx(canvas)
+
+    coroutines = []
+
+    for _ in range(amount):
+        row, column = random.randint(1, height - 1), random.randint(1, width - 1)
+        symbol = random.choice("+*.:")
+        coroutines.append(blink(canvas, row, column, symbol))
+
     canvas.border()
-    coroutines = [blink(canvas, row, column) for column in range(column, 30, 2)]
+
     while True:
         canvas.refresh()
         for coroutine in coroutines:
