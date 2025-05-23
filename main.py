@@ -5,6 +5,7 @@ import time
 from itertools import cycle
 from pathlib import Path
 
+TIC_TIMEOUT = 0.3
 
 def draw_frame(canvas, start_row, start_column, text, negative=False):
     """Выводит на экран многострочный текст — кадр анимации.
@@ -120,7 +121,7 @@ def draw(canvas, amount=50):
                 coroutine.send(None)
             except StopIteration:
                 coroutines.remove(coroutine)
-        time.sleep(0.3)
+        time.sleep(TIC_TIMEOUT)
 
 
 def main():
