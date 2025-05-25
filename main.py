@@ -53,7 +53,9 @@ async def animate_spaceship(canvas, row, column, frames, max_row, max_column):
         )
 
 
-async def animate_fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
+async def animate_fire(
+    canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
+):
     """Анимация выстрела."""
 
     row, column = start_row, start_column
@@ -118,7 +120,7 @@ def draw_animation(canvas, amount=100):
     # fire(canvas, 6, 77) -- анимация выстрела
 
     for _ in range(amount):
-        row, column = random.randint(1, max_row - 1), random.randint(1, max_column - 1)
+        row, column = random.randint(1, max_row - 2), random.randint(1, max_column - 2)
         symbol = random.choice("+*.:")
         coroutines.append(animate_blink(canvas, row, column, symbol))
 
@@ -134,13 +136,9 @@ def draw_animation(canvas, amount=100):
         time.sleep(TIC_TIMEOUT)
 
 
-def draw(canvas):
-    draw_animation(canvas)
-
-
 def main():
     curses.update_lines_cols()
-    curses.wrapper(draw)
+    curses.wrapper(draw_animation)
 
 
 if __name__ == "__main__":
