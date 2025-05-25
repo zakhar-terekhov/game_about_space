@@ -142,7 +142,10 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
     # fire(canvas, 6, 77) -- анимация выстрела
 
     for _ in range(amount):
-        row, column = (random.randint(1, max_row - 2), random.randint(1, max_column - 2))
+        row, column = (
+            random.randint(1, max_row - 2),
+            random.randint(1, max_column - 2),
+        )
         symbol = random.choice("+*.:")
         coroutines.append(
             animate_blink(canvas=canvas, row=row, column=column, symbol=symbol)
