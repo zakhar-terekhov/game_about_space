@@ -27,7 +27,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv python install 3.13.3
 ```
 
-### Запустите сккрипт
+### Запустите скрипт
 
 ```bash
 uv run main.py
