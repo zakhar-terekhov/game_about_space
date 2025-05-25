@@ -15,7 +15,7 @@ async def animate_spaceship(
     canvas: curses.window,
     row: int,
     column: int,
-    frames: str,
+    frames: list[str],
     max_row: int,
     max_column: int,
 ) -> None:
