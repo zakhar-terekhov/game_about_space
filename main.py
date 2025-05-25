@@ -38,17 +38,17 @@ async def animate_spaceship(canvas, row, column, frames, max_row, max_column):
             + 1,
         )
 
-        draw_frame(canvas, row, column, frame)
+        draw_frame(canvas=canvas, start_row=row, start_column=column, text=frame)
 
         rows_direction, columns_direction, _ = read_controls(canvas)
 
         await asyncio.sleep(0)
 
         draw_frame(
-            canvas,
-            row,
-            column,
-            frame,
+            canvas=canvas,
+            start_row=row,
+            start_column=column,
+            text=frame,
             negative=True,
         )
 
@@ -107,6 +107,8 @@ async def animate_blink(canvas, row, column, symbol):
 def draw_animation(canvas, amount=100):
     """Отображение анимаций на экране."""
 
+    canvas.border()
+
     max_row, max_column = canvas.getmaxyx()
 
     frames_dir = Path("frames").glob("rocket_*")
@@ -114,7 +116,14 @@ def draw_animation(canvas, amount=100):
     rocket_frames = [Path(frame).read_text(encoding="utf-8") for frame in frames_dir]
 
     coroutines = [
-        animate_spaceship(canvas, 2, 77, rocket_frames, max_row - 2, max_column - 2)
+        animate_spaceship(
+            canvas=canvas,
+            row=2,
+            column=77,
+            frames=rocket_frames,
+            max_row=max_row - 2,
+            max_column=max_column - 2,
+        )
     ]
 
     # fire(canvas, 6, 77) -- анимация выстрела
@@ -122,9 +131,9 @@ def draw_animation(canvas, amount=100):
     for _ in range(amount):
         row, column = random.randint(1, max_row - 2), random.randint(1, max_column - 2)
         symbol = random.choice("+*.:")
-        coroutines.append(animate_blink(canvas, row, column, symbol))
-
-    canvas.border()
+        coroutines.append(
+            animate_blink(canvas=canvas, row=row, column=column, symbol=symbol)
+        )
 
     while True:
         canvas.refresh()
