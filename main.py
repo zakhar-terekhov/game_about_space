@@ -4,13 +4,23 @@ import random
 import time
 from itertools import cycle
 from pathlib import Path
+from statistics import median
 
-TIC_TIMEOUT = 0.3
+TIC_TIMEOUT = 0.1
 SPACE_KEY_CODE = 32
 LEFT_KEY_CODE = 260
 RIGHT_KEY_CODE = 261
 UP_KEY_CODE = 259
 DOWN_KEY_CODE = 258
+
+
+def get_frame_size(text):
+    """Calculate size of multiline text fragment, return pair — number of rows and colums."""
+
+    lines = text.splitlines()
+    rows = len(lines)
+    columns = max([len(line) for line in lines])
+    return rows, columns
 
 
 def read_controls(canvas):
@@ -76,17 +86,31 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
             canvas.addch(row, column, symbol)
 
 
-async def animate_spaceship(canvas, row, column, frames):
+async def animate_spaceship(canvas, row, column, frames, max_row, max_column):
     """Анимация звездного корабля."""
 
     canvas.nodelay(True)
 
-    rows_direction, columns_direction, space_pressed = read_controls(canvas)
+    rows_direction, columns_direction, space_pressed = (0, 0, False)
 
     for frame in cycle(frames):
-        row, column = (
+        frame_rows_size, frame_columns_size = get_frame_size(frame)
+
+        next_row, next_column = (
             row + rows_direction,
             column + columns_direction,
+        )
+
+        last_row_frame = next_row + frame_rows_size - 1
+        last_column_frame = next_column + frame_columns_size - 1
+
+        row, column = (
+            median(sorted((max_row, last_row_frame, frame_rows_size)))
+            - frame_rows_size
+            + 1,
+            median(sorted((max_column, last_column_frame, frame_columns_size)))
+            - frame_columns_size
+            + 1,
         )
 
         draw_frame(canvas, row, column, frame)
@@ -162,7 +186,9 @@ def draw(canvas, amount=100):
 
     rocket_frames = [Path(frame).read_text() for frame in frames_dir]
 
-    coroutines = [animate_spaceship(canvas, 2, 77, rocket_frames)]
+    coroutines = [
+        animate_spaceship(canvas, 2, 77, rocket_frames, max_row - 2, max_column - 2)
+    ]
 
     # fire(canvas, 6, 77) -- анимация выстрела
 
