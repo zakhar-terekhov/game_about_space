@@ -127,18 +127,22 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
 
     max_row, max_column = canvas.getmaxyx()
 
+    frame_max_row, frame_max_column = max_row - 2, max_column - 2
+
     frames_dir = Path("frames").glob("rocket_*")
 
     rocket_frames = [Path(frame).read_text(encoding="utf-8") for frame in frames_dir]
 
+    spaceship_row, spaceship_column = (2, 77)
+
     coroutines = [
         animate_spaceship(
             canvas=canvas,
-            row=2,
-            column=77,
+            row=spaceship_row,
+            column=spaceship_column,
             frames=rocket_frames,
-            max_row=max_row - 2,
-            max_column=max_column - 2,
+            max_row=frame_max_row,
+            max_column=frame_max_column,
         )
     ]
 
@@ -146,8 +150,8 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
 
     for _ in range(amount):
         row, column = (
-            random.randint(1, max_row - 2),
-            random.randint(1, max_column - 2),
+            random.randint(1, frame_max_row),
+            random.randint(1, frame_max_column),
         )
         symbol = random.choice("+*.:")
         offset_tics = random.randint(1, 10)
