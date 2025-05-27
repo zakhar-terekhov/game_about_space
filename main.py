@@ -131,7 +131,11 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
 
     frames_dir = Path("frames").glob("rocket_*")
 
-    spaceship_frames = [Path(frame).read_text(encoding="utf-8") for frame in frames_dir]
+    spaceship_frames = []
+
+    for frame in frames_dir:
+        spaceship_frame = Path(frame).read_text(encoding="utf-8")
+        spaceship_frames += [spaceship_frame, spaceship_frame]
 
     spaceship_row, spaceship_column = (2, 77)
 
