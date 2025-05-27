@@ -97,22 +97,25 @@ async def animate_fire(
 
 
 async def animate_blink(
-    canvas: curses.window, row: int, column: int, symbol: str
+    canvas: curses.window,
+    row: int,
+    column: int,
+    symbol: str,
+    offset_tics: int,
 ) -> None:
     """Анимация зведного неба."""
 
     while True:
-        repeat = random.randint(1, 10)
-        for _ in range(repeat):
+        for _ in range(offset_tics):
             canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
-        for _ in range(repeat):
+        for _ in range(offset_tics):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
-        for _ in range(repeat):
+        for _ in range(offset_tics):
             canvas.addstr(row, column, symbol, curses.A_BOLD)
             await asyncio.sleep(0)
-        for _ in range(repeat):
+        for _ in range(offset_tics):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
 
@@ -147,8 +150,15 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
             random.randint(1, max_column - 2),
         )
         symbol = random.choice("+*.:")
+        offset_tics = random.randint(1, 10)
         coroutines.append(
-            animate_blink(canvas=canvas, row=row, column=column, symbol=symbol)
+            animate_blink(
+                canvas=canvas,
+                row=row,
+                column=column,
+                symbol=symbol,
+                offset_tics=offset_tics,
+            )
         )
 
     while True:
