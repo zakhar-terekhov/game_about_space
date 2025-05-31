@@ -11,6 +11,22 @@ from curses_tools import draw_frame, get_frame_size, read_controls
 TIC_TIMEOUT = 0.1
 
 
+async def animate_fly_garbage(canvas, column, garbage_frame, speed=0.5):
+    """Анимирует мусор, перемещающийся сверху вниз. Положение столбца останется таким же, как указано при запуске."""
+    rows_number, columns_number = canvas.getmaxyx()
+
+    column = max(column, 0)
+    column = min(column, columns_number - 1)
+
+    row = 0
+
+    while row < rows_number:
+        draw_frame(canvas, row, column, garbage_frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        row += speed
+
+
 async def animate_spaceship(
     canvas: curses.window,
     row: int,
@@ -129,15 +145,20 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
 
     frame_max_row, frame_max_column = max_row - 2, max_column - 2
 
-    frames_dir = Path("frames").glob("rocket_*")
+    spaceship_frames_dir = Path("frames").glob("rocket_*")
 
     spaceship_frames = []
 
-    for frame in frames_dir:
+    for frame in spaceship_frames_dir:
         spaceship_frame = Path(frame).read_text(encoding="utf-8")
         spaceship_frames += [spaceship_frame, spaceship_frame]
 
     spaceship_row, spaceship_column = (2, 77)
+
+    garbage_frames = [
+        Path(frame).read_text(encoding="utf-8")
+        for frame in Path("frames").glob("trash_*")
+    ]
 
     coroutines = [
         animate_spaceship(
@@ -147,7 +168,7 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
             frames=spaceship_frames,
             max_row=frame_max_row,
             max_column=frame_max_column,
-        )
+        ),
     ]
 
     # fire(canvas, 6, 77) -- анимация выстрела
@@ -166,6 +187,15 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
                 column=column,
                 symbol=symbol,
                 offset_tics=offset_tics,
+            )
+        )
+
+    for _ in range(5):
+        column = random.randint(1, frame_max_column)
+        garbage_frame = random.choice(garbage_frames)
+        coroutines.append(
+            animate_fly_garbage(
+                canvas=canvas, column=column, garbage_frame=garbage_frame
             )
         )
 
