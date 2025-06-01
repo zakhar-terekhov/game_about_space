@@ -11,6 +11,11 @@ from curses_tools import draw_frame, get_frame_size, read_controls
 TIC_TIMEOUT = 0.1
 
 
+async def sleep(tics=1):
+    for _ in range(tics):
+        await asyncio.sleep(0)
+
+
 async def animate_spaceship(
     canvas: curses.window,
     row: int,
@@ -107,17 +112,13 @@ async def animate_blink(
 
     while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        for _ in range(offset_tics):
-            await asyncio.sleep(0)
+        await sleep(offset_tics)
         canvas.addstr(row, column, symbol)
-        for _ in range(offset_tics):
-            await asyncio.sleep(0)
+        await sleep(offset_tics)
         canvas.addstr(row, column, symbol, curses.A_BOLD)
-        for _ in range(offset_tics):
-            await asyncio.sleep(0)
+        await sleep(offset_tics)
         canvas.addstr(row, column, symbol)
-        for _ in range(offset_tics):
-            await asyncio.sleep(0)
+        await sleep(offset_tics)
 
 
 async def animate_flying_garbage(
@@ -149,7 +150,7 @@ async def fill_orbit_with_garbage(
 
         garbage_frame = random.choice(garbage_frames)
 
-        min_delay, max_delay = (10, 40)
+        min_delay, max_delay = (10, 20)
         delay = random.randint(min_delay, max_delay)
 
         coroutines.append(
@@ -158,8 +159,7 @@ async def fill_orbit_with_garbage(
             )
         )
 
-        for _ in range(delay):
-            await asyncio.sleep(0)
+        await sleep(delay)
 
 
 def draw_animation(canvas: curses.window, amount=100) -> None:
