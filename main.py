@@ -11,22 +11,6 @@ from curses_tools import draw_frame, get_frame_size, read_controls
 TIC_TIMEOUT = 0.1
 
 
-async def animate_fly_garbage(canvas, column, garbage_frame, speed=0.5):
-    """Анимирует мусор, перемещающийся сверху вниз. Положение столбца останется таким же, как указано при запуске."""
-    rows_number, columns_number = canvas.getmaxyx()
-
-    column = max(column, 0)
-    column = min(column, columns_number - 1)
-
-    row = 0
-
-    while row < rows_number:
-        draw_frame(canvas, row, column, garbage_frame)
-        await asyncio.sleep(0)
-        draw_frame(canvas, row, column, garbage_frame, negative=True)
-        row += speed
-
-
 async def animate_spaceship(
     canvas: curses.window,
     row: int,
@@ -122,17 +106,59 @@ async def animate_blink(
     """Анимация зведного неба."""
 
     while True:
+        canvas.addstr(row, column, symbol, curses.A_DIM)
         for _ in range(offset_tics):
-            canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol)
         for _ in range(offset_tics):
-            canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol, curses.A_BOLD)
         for _ in range(offset_tics):
-            canvas.addstr(row, column, symbol, curses.A_BOLD)
             await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol)
         for _ in range(offset_tics):
-            canvas.addstr(row, column, symbol)
+            await asyncio.sleep(0)
+
+
+async def animate_flying_garbage(
+    canvas: curses.window, column: int, garbage_frame: str, speed=0.5
+) -> None:
+    """Анимирует мусор, перемещающийся сверху вниз.
+
+    Положение столбца останется таким же, как указано при запуске."""
+    rows_number, columns_number = canvas.getmaxyx()
+
+    column = max(column, 0)
+    column = min(column, columns_number - 1)
+
+    row = 0
+
+    while row < rows_number:
+        draw_frame(canvas, row, column, garbage_frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        row += speed
+
+
+async def fill_orbit_with_garbage(
+    canvas: curses.window, garbage_frames: list, frame_max_column: int
+) -> None:
+    """Разбрасывает звездный мусор по небу."""
+    while True:
+        garbage_column = random.randint(1, frame_max_column)
+
+        garbage_frame = random.choice(garbage_frames)
+
+        min_delay, max_delay = (10, 40)
+        delay = random.randint(min_delay, max_delay)
+
+        coroutines.append(
+            animate_flying_garbage(
+                canvas=canvas, column=garbage_column, garbage_frame=garbage_frame
+            )
+        )
+
+        for _ in range(delay):
             await asyncio.sleep(0)
 
 
@@ -153,14 +179,14 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
         spaceship_frame = Path(frame).read_text(encoding="utf-8")
         spaceship_frames += [spaceship_frame, spaceship_frame]
 
-    spaceship_row, spaceship_column = (2, 77)
+    spaceship_row, spaceship_column = (12, 50)
 
     garbage_frames = [
         Path(frame).read_text(encoding="utf-8")
         for frame in Path("frames").glob("trash_*")
     ]
 
-    coroutines = [
+    coroutines.append(
         animate_spaceship(
             canvas=canvas,
             row=spaceship_row,
@@ -169,7 +195,7 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
             max_row=frame_max_row,
             max_column=frame_max_column,
         ),
-    ]
+    )
 
     # fire(canvas, 6, 77) -- анимация выстрела
 
@@ -190,22 +216,21 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
             )
         )
 
-    for _ in range(5):
-        column = random.randint(1, frame_max_column)
-        garbage_frame = random.choice(garbage_frames)
-        coroutines.append(
-            animate_fly_garbage(
-                canvas=canvas, column=column, garbage_frame=garbage_frame
-            )
-        )
+    garbage_coroutine = fill_orbit_with_garbage(
+        canvas=canvas, garbage_frames=garbage_frames, frame_max_column=frame_max_column
+    )
 
     while True:
         canvas.refresh()
+
+        garbage_coroutine.send(None)
+
         for coroutine in coroutines.copy():
             try:
                 coroutine.send(None)
             except StopIteration:
                 coroutines.remove(coroutine)
+
         time.sleep(TIC_TIMEOUT)
 
 
@@ -215,4 +240,6 @@ def main():
 
 
 if __name__ == "__main__":
+    coroutines = []
+
     main()
