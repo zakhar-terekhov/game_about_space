@@ -7,6 +7,7 @@ from pathlib import Path
 from statistics import median
 
 from curses_tools import draw_frame, get_frame_size, read_controls
+from physics import update_speed
 
 TIC_TIMEOUT = 0.1
 
@@ -29,6 +30,7 @@ async def animate_spaceship(
     canvas.nodelay(True)
 
     rows_direction, columns_direction, _ = (0, 0, False)
+    row_speed = column_speed = 0
 
     for frame in cycle(frames):
         frame_rows_size, frame_columns_size = get_frame_size(frame)
@@ -41,13 +43,19 @@ async def animate_spaceship(
         last_row_frame = next_row + frame_rows_size - 1
         last_column_frame = next_column + frame_columns_size - 1
 
+        row_speed, column_speed = update_speed(
+            row_speed, column_speed, rows_direction, columns_direction
+        )
+
         row, column = (
             median(sorted((max_row, last_row_frame, frame_rows_size)))
             - frame_rows_size
-            + 1,
+            + 1
+            + row_speed,
             median(sorted((max_column, last_column_frame, frame_columns_size)))
             - frame_columns_size
-            + 1,
+            + 1
+            + column_speed,
         )
 
         draw_frame(canvas=canvas, start_row=row, start_column=column, text=frame)
