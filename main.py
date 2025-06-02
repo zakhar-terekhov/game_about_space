@@ -7,6 +7,7 @@ from pathlib import Path
 from statistics import median
 
 from curses_tools import draw_frame, get_frame_size, read_controls
+from obstacles import Obstacle, show_obstacles
 from physics import update_speed
 
 TIC_TIMEOUT = 0.1
@@ -151,7 +152,19 @@ async def animate_flying_garbage(
 
     row = 0
 
+    rows_size, columns_size = get_frame_size(garbage_frame)
+
     while row < rows_number:
+        obstacles.clear()
+        obstacles.append(
+            Obstacle(
+                row=row,
+                column=column,
+                rows_size=rows_size + 1,
+                columns_size=columns_size + 1,
+            )
+        )
+        coroutines.append(show_obstacles(canvas=canvas, obstacles=obstacles))
         draw_frame(canvas, row, column, garbage_frame)
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, garbage_frame, negative=True)
@@ -235,10 +248,13 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
         canvas=canvas, garbage_frames=garbage_frames, frame_max_column=frame_max_column
     )
 
+    # obstacles_coroutine = show_obstacles(canvas=canvas, obstacles=obstacles)
+
     while True:
         canvas.refresh()
 
         garbage_coroutine.send(None)
+        # obstacles_coroutine.send(None)
 
         for coroutine in coroutines.copy():
             try:
@@ -256,4 +272,5 @@ def main():
 
 if __name__ == "__main__":
     coroutines = []
+    obstacles = []
     main()
