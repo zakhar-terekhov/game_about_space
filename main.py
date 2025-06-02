@@ -248,13 +248,10 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
         canvas=canvas, garbage_frames=garbage_frames, frame_max_column=frame_max_column
     )
 
-    # obstacles_coroutine = show_obstacles(canvas=canvas, obstacles=obstacles)
-
     while True:
         canvas.refresh()
 
         garbage_coroutine.send(None)
-        # obstacles_coroutine.send(None)
 
         for coroutine in coroutines.copy():
             try:
