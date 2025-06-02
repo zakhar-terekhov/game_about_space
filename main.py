@@ -29,7 +29,7 @@ async def animate_spaceship(
 
     canvas.nodelay(True)
 
-    rows_direction, columns_direction, _ = (0, 0, False)
+    rows_direction, columns_direction, space_pressed = (0, 0, False)
     row_speed = column_speed = 0
 
     for frame in cycle(frames):
@@ -60,7 +60,16 @@ async def animate_spaceship(
 
         draw_frame(canvas=canvas, start_row=row, start_column=column, text=frame)
 
-        rows_direction, columns_direction, _ = read_controls(canvas)
+        if space_pressed:
+            coroutines.append(
+                animate_fire(
+                    canvas=canvas,
+                    start_row=row + 2,
+                    start_column=column + 2,
+                )
+            )
+
+        rows_direction, columns_direction, space_pressed = read_controls(canvas)
 
         await asyncio.sleep(0)
 
@@ -202,10 +211,8 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
             frames=spaceship_frames,
             max_row=frame_max_row,
             max_column=frame_max_column,
-        ),
+        )
     )
-
-    # fire(canvas, 6, 77) -- анимация выстрела
 
     for _ in range(amount):
         row, column = (
@@ -249,5 +256,4 @@ def main():
 
 if __name__ == "__main__":
     coroutines = []
-
     main()
