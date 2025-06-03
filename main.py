@@ -7,7 +7,8 @@ from pathlib import Path
 from statistics import median
 
 from curses_tools import draw_frame, get_frame_size, read_controls
-from obstacles import Obstacle, show_obstacles
+from explosion import explode
+from obstacles import Obstacle
 from physics import update_speed
 
 TIC_TIMEOUT = 0.1
@@ -170,6 +171,9 @@ async def animate_flying_garbage(
         )
         for collision in obstacles_in_last_collisions:
             if collision.has_collision(row, column):
+                coroutines.append(
+                    explode(canvas=canvas, center_row=row, center_column=column)
+                )
                 return
         draw_frame(canvas, row, column, garbage_frame)
         await asyncio.sleep(0)
