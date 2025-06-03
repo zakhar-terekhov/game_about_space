@@ -112,6 +112,8 @@ async def animate_fire(
     curses.beep()
 
     while 0 < row < max_row and 0 < column < max_column:
+        if any([obstacle.has_collision(row, column) for obstacle in obstacles]):
+            return
         canvas.addstr(round(row), round(column), symbol)
         await asyncio.sleep(0)
         canvas.addstr(round(row), round(column), " ")
@@ -140,7 +142,7 @@ async def animate_blink(
 
 
 async def animate_flying_garbage(
-    canvas: curses.window, column: int, garbage_frame: str, speed=0.5
+    canvas: curses.window, column: int, garbage_frame: str, speed=0.3
 ) -> None:
     """Анимирует мусор, перемещающийся сверху вниз.
 
@@ -180,7 +182,7 @@ async def fill_orbit_with_garbage(
 
         garbage_frame = random.choice(garbage_frames)
 
-        min_delay, max_delay = (10, 20)
+        min_delay, max_delay = (25, 45)
         delay = random.randint(min_delay, max_delay)
 
         coroutines.append(
