@@ -87,7 +87,7 @@ async def animate_fire(
     canvas: curses.window,
     start_row: int,
     start_column: int,
-    rows_speed=-0.3,
+    rows_speed=-0.7,
     columns_speed=0,
 ) -> None:
     """Анимация выстрела."""
@@ -99,11 +99,11 @@ async def animate_fire(
 
     canvas.addstr(round(row), round(column), "O")
     await asyncio.sleep(0)
-    canvas.addstr(round(row), round(column), " ")
 
     row += rows_speed
     column += columns_speed
 
+    canvas.addstr(round(row), round(column), " ")
     symbol = "-" if columns_speed else "|"
 
     rows, columns = canvas.getmaxyx()
@@ -112,8 +112,10 @@ async def animate_fire(
     curses.beep()
 
     while 0 < row < max_row and 0 < column < max_column:
-        if any([obstacle.has_collision(row, column) for obstacle in obstacles]):
-            return
+        obstacles_in_last_collisions.clear()
+        obstacles_in_last_collisions.extend(
+            [obstacle for obstacle in obstacles if obstacle.has_collision(row, column)]
+        )
         canvas.addstr(round(row), round(column), symbol)
         await asyncio.sleep(0)
         canvas.addstr(round(row), round(column), " ")
@@ -142,7 +144,7 @@ async def animate_blink(
 
 
 async def animate_flying_garbage(
-    canvas: curses.window, column: int, garbage_frame: str, speed=0.3
+    canvas: curses.window, column: int, garbage_frame: str, speed=0.4
 ) -> None:
     """Анимирует мусор, перемещающийся сверху вниз.
 
@@ -166,7 +168,9 @@ async def animate_flying_garbage(
                 columns_size=columns_size + 1,
             )
         )
-        coroutines.append(show_obstacles(canvas=canvas, obstacles=obstacles))
+        for collision in obstacles_in_last_collisions:
+            if collision.has_collision(row, column):
+                return
         draw_frame(canvas, row, column, garbage_frame)
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, garbage_frame, negative=True)
@@ -182,7 +186,7 @@ async def fill_orbit_with_garbage(
 
         garbage_frame = random.choice(garbage_frames)
 
-        min_delay, max_delay = (25, 45)
+        min_delay, max_delay = (10, 25)
         delay = random.randint(min_delay, max_delay)
 
         coroutines.append(
@@ -270,6 +274,5 @@ def main():
 
 
 if __name__ == "__main__":
-    coroutines = []
-    obstacles = []
+    coroutines, obstacles, obstacles_in_last_collisions = [], [], []
     main()
