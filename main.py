@@ -10,13 +10,37 @@ from curses_tools import draw_frame, get_frame_size, read_controls
 from explosion import explode
 from obstacles import Obstacle
 from physics import update_speed
+from game_scenario import PHRASES, get_garbage_delay_tics
 
 TIC_TIMEOUT = 0.1
+
+year = 1957
 
 
 async def sleep(tics=1):
     for _ in range(tics):
         await asyncio.sleep(0)
+
+
+async def shows_year_description(
+    canvas, rows_size=5, columns_size=40, row=15, column=1
+) -> None:
+    global year
+    while True:
+        canvas.derwin(rows_size, columns_size, row, column).box()
+        phrase = f"{year} year \n {PHRASES.get(year, '')}"
+        draw_frame(
+            canvas=canvas, start_row=row + 1, start_column=column + 1, text=phrase
+        )
+        await sleep(15)
+        draw_frame(
+            canvas=canvas,
+            start_row=row + 1,
+            start_column=column + 1,
+            text=phrase,
+            negative=True,
+        )
+        year += 1
 
 
 async def animate_spaceship(
@@ -195,16 +219,17 @@ async def fill_orbit_with_garbage(
 
         garbage_frame = random.choice(garbage_frames)
 
-        min_delay, max_delay = (10, 25)
-        delay = random.randint(min_delay, max_delay)
+        delay = get_garbage_delay_tics(year)
 
-        coroutines.append(
-            animate_flying_garbage(
-                canvas=canvas, column=garbage_column, garbage_frame=garbage_frame
+        if delay is not None:
+            coroutines.append(
+                animate_flying_garbage(
+                    canvas=canvas, column=garbage_column, garbage_frame=garbage_frame
+                )
             )
-        )
 
-        await sleep(delay)
+            await sleep(delay)
+        await asyncio.sleep(0)
 
 
 async def show_gameover(canvas: curses.window, row=5, column=25):
@@ -229,6 +254,8 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
 
     canvas.border()
 
+    # subwin.box()
+
     max_row, max_column = canvas.getmaxyx()
 
     frame_max_row, frame_max_column = max_row - 2, max_column - 2
@@ -248,15 +275,18 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
         for frame in Path("frames").glob("trash_*")
     ]
 
-    coroutines.append(
-        animate_spaceship(
-            canvas=canvas,
-            row=spaceship_row,
-            column=spaceship_column,
-            frames=spaceship_frames,
-            max_row=frame_max_row,
-            max_column=frame_max_column,
-        )
+    coroutines.extend(
+        [
+            shows_year_description(canvas=canvas, row=15, column=1),
+            animate_spaceship(
+                canvas=canvas,
+                row=spaceship_row,
+                column=spaceship_column,
+                frames=spaceship_frames,
+                max_row=frame_max_row,
+                max_column=frame_max_column,
+            ),
+        ]
     )
 
     for _ in range(amount):
@@ -300,5 +330,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # loop = asyncio.get_event_loop()
     coroutines, obstacles, obstacles_in_last_collisions = [], [], []
+
     main()
