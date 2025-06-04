@@ -8,9 +8,9 @@ from statistics import median
 
 from curses_tools import draw_frame, get_frame_size, read_controls
 from explosion import explode
+from game_scenario import PHRASES, get_garbage_delay_tics
 from obstacles import Obstacle
 from physics import update_speed
-from game_scenario import PHRASES, get_garbage_delay_tics
 
 TIC_TIMEOUT = 0.1
 
@@ -22,15 +22,40 @@ async def sleep(tics=1):
         await asyncio.sleep(0)
 
 
+async def show_gameover(canvas: curses.window, row=5, column=25):
+    """Отображает заставку Game Over при столкновнении мусора со звездолетом."""
+
+    game_over = """
+   _____                         ____                 
+  / ____|                       / __ \                
+ | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
+ | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
+ | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
+  \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
+                                                                                                        
+    """
+    while True:
+        draw_frame(canvas=canvas, start_row=row, start_column=column, text=game_over)
+        await asyncio.sleep(0)
+
+
 async def shows_year_description(
-    canvas, rows_size=5, columns_size=40, row=15, column=1
+    canvas: curses.window,
+    rows_size=5,
+    columns_size=40,
+    row=15,
+    column=1,
 ) -> None:
+    """Отсчитывает года и выводит на экран событие, произошедшее в мире космонавтики в конкретном году."""
     global year
     while True:
         canvas.derwin(rows_size, columns_size, row, column).box()
         phrase = f"{year} year \n {PHRASES.get(year, '')}"
         draw_frame(
-            canvas=canvas, start_row=row + 1, start_column=column + 1, text=phrase
+            canvas=canvas,
+            start_row=row + 1,
+            start_column=column + 1,
+            text=phrase,
         )
         await sleep(15)
         draw_frame(
@@ -70,7 +95,10 @@ async def animate_spaceship(
         last_column_frame = next_column + frame_columns_size - 1
 
         row_speed, column_speed = update_speed(
-            row_speed, column_speed, rows_direction, columns_direction
+            row_speed,
+            column_speed,
+            rows_direction,
+            columns_direction,
         )
 
         row, column = (
@@ -89,7 +117,12 @@ async def animate_spaceship(
                 coroutines.append(show_gameover(canvas=canvas))
                 return
 
-        draw_frame(canvas=canvas, start_row=row, start_column=column, text=frame)
+        draw_frame(
+            canvas=canvas,
+            start_row=row,
+            start_column=column,
+            text=frame,
+        )
 
         if space_pressed:
             coroutines.append(
@@ -174,7 +207,10 @@ async def animate_blink(
 
 
 async def animate_flying_garbage(
-    canvas: curses.window, column: int, garbage_frame: str, speed=0.5
+    canvas: curses.window,
+    column: int,
+    garbage_frame: str,
+    speed=0.5,
 ) -> None:
     """Анимирует мусор, перемещающийся сверху вниз.
 
@@ -211,7 +247,9 @@ async def animate_flying_garbage(
 
 
 async def fill_orbit_with_garbage(
-    canvas: curses.window, garbage_frames: list, frame_max_column: int
+    canvas: curses.window,
+    garbage_frames: list,
+    frame_max_column: int,
 ) -> None:
     """Разбрасывает звездный мусор по небу."""
     while True:
@@ -222,39 +260,25 @@ async def fill_orbit_with_garbage(
         delay = get_garbage_delay_tics(year)
 
         if delay is not None:
+            garbage_column = random.randint(1, frame_max_column)
+            garbage_frame = random.choice(garbage_frames)
             coroutines.append(
                 animate_flying_garbage(
-                    canvas=canvas, column=garbage_column, garbage_frame=garbage_frame
+                    canvas=canvas,
+                    column=garbage_column,
+                    garbage_frame=garbage_frame,
                 )
             )
 
             await sleep(delay)
-        await asyncio.sleep(0)
-
-
-async def show_gameover(canvas: curses.window, row=5, column=25):
-    """Отображает заставку Game Over при столкновнении мусора со звездолетом."""
-
-    game_over = """
-   _____                         ____                 
-  / ____|                       / __ \                
- | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
- | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
- | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
-  \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
-                                                                                                        
-    """
-    while True:
-        draw_frame(canvas=canvas, start_row=row, start_column=column, text=game_over)
-        await asyncio.sleep(0)
+        else:
+            await asyncio.sleep(0)
 
 
 def draw_animation(canvas: curses.window, amount=100) -> None:
     """Отображение анимаций на экране."""
 
     canvas.border()
-
-    # subwin.box()
 
     max_row, max_column = canvas.getmaxyx()
 
@@ -268,7 +292,7 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
         spaceship_frame = Path(frame).read_text(encoding="utf-8")
         spaceship_frames += [spaceship_frame, spaceship_frame]
 
-    spaceship_row, spaceship_column = (12, 50)
+    spaceship_row, spaceship_column = 12, 50
 
     garbage_frames = [
         Path(frame).read_text(encoding="utf-8")
@@ -307,7 +331,9 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
         )
 
     garbage_coroutine = fill_orbit_with_garbage(
-        canvas=canvas, garbage_frames=garbage_frames, frame_max_column=frame_max_column
+        canvas=canvas,
+        garbage_frames=garbage_frames,
+        frame_max_column=frame_max_column,
     )
 
     while True:
@@ -330,7 +356,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # loop = asyncio.get_event_loop()
     coroutines, obstacles, obstacles_in_last_collisions = [], [], []
 
     main()
