@@ -60,6 +60,11 @@ async def animate_spaceship(
             + column_speed,
         )
 
+        for obstacle in obstacles:
+            if obstacle.has_collision(row + 2, column + 2):
+                coroutines.append(show_gameover(canvas=canvas))
+                return
+
         draw_frame(canvas=canvas, start_row=row, start_column=column, text=frame)
 
         if space_pressed:
@@ -88,7 +93,7 @@ async def animate_fire(
     canvas: curses.window,
     start_row: int,
     start_column: int,
-    rows_speed=-0.7,
+    rows_speed=-0.3,
     columns_speed=0,
 ) -> None:
     """Анимация выстрела."""
@@ -145,7 +150,7 @@ async def animate_blink(
 
 
 async def animate_flying_garbage(
-    canvas: curses.window, column: int, garbage_frame: str, speed=0.4
+    canvas: curses.window, column: int, garbage_frame: str, speed=0.5
 ) -> None:
     """Анимирует мусор, перемещающийся сверху вниз.
 
@@ -200,6 +205,23 @@ async def fill_orbit_with_garbage(
         )
 
         await sleep(delay)
+
+
+async def show_gameover(canvas: curses.window, row=5, column=25):
+    """Отображает заставку Game Over при столкновнении мусора со звездолетом."""
+
+    game_over = """
+   _____                         ____                 
+  / ____|                       / __ \                
+ | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
+ | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
+ | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
+  \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
+                                                                                                        
+    """
+    while True:
+        draw_frame(canvas=canvas, start_row=row, start_column=column, text=game_over)
+        await asyncio.sleep(0)
 
 
 def draw_animation(canvas: curses.window, amount=100) -> None:
