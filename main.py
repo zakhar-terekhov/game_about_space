@@ -25,17 +25,12 @@ async def sleep(tics=1):
 async def show_gameover(canvas: curses.window, row=5, column=25):
     """Отображает заставку Game Over при столкновнении мусора со звездолетом."""
 
-    game_over = """
-   _____                         ____                 
-  / ____|                       / __ \                
- | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
- | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
- | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
-  \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
-                                                                                                        
-    """
+    game_over_frame = Path("frames/game_over.txt").read_text(encoding="utf-8")
+
     while True:
-        draw_frame(canvas=canvas, start_row=row, start_column=column, text=game_over)
+        draw_frame(
+            canvas=canvas, start_row=row, start_column=column, text=game_over_frame
+        )
         await asyncio.sleep(0)
 
 
