@@ -11,10 +11,9 @@ from explosion import explode
 from game_scenario import PHRASES, get_garbage_delay_tics
 from obstacles import Obstacle
 from physics import update_speed
+from state import coroutines, obstacles, obstacles_in_last_collisions, year
 
 TIC_TIMEOUT = 0.1
-
-year = 1957
 
 
 async def sleep(tics=1):
@@ -351,6 +350,4 @@ def main():
 
 
 if __name__ == "__main__":
-    coroutines, obstacles, obstacles_in_last_collisions = [], [], []
-
     main()
