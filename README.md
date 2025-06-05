@@ -34,4 +34,4 @@ uv run main.py
 ```
 
 # Результаты
-![](https://dvmn.org/media/lessons/ezgif.com-optimize_YgtCKU0.gif)
+![](https://github.com/zakhar-terekhov/Images/blob/main/space.gif)
