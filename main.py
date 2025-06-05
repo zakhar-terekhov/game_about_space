@@ -119,7 +119,7 @@ async def animate_spaceship(
             text=frame,
         )
 
-        if space_pressed:
+        if space_pressed and year > 2020:
             coroutines.append(
                 animate_fire(
                     canvas=canvas,
