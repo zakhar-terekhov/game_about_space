@@ -16,12 +16,13 @@ from state import coroutines, obstacles, obstacles_in_last_collisions, year
 TIC_TIMEOUT = 0.1
 
 
-async def sleep(tics=1):
+async def sleep(tics=1) -> None:
+    """Задержка между кадрами анимации в секундах."""
     for _ in range(tics):
         await asyncio.sleep(0)
 
 
-async def show_gameover(canvas: curses.window, row=5, column=25):
+async def show_gameover(canvas: curses.window, row=5, column=25) -> None:
     """Отображает заставку Game Over при столкновнении мусора со звездолетом."""
 
     game_over_frame = Path("frames/game_over.txt").read_text(encoding="utf-8")
@@ -246,6 +247,7 @@ async def fill_orbit_with_garbage(
     frame_max_column: int,
 ) -> None:
     """Разбрасывает звездный мусор по небу."""
+
     while True:
         garbage_column = random.randint(1, frame_max_column)
 
@@ -265,8 +267,8 @@ async def fill_orbit_with_garbage(
             )
 
             await sleep(delay)
-        else:
-            await asyncio.sleep(0)
+
+        await asyncio.sleep(0)
 
 
 def draw_animation(canvas: curses.window, amount=100) -> None:
@@ -284,7 +286,7 @@ def draw_animation(canvas: curses.window, amount=100) -> None:
 
     for frame in spaceship_frames_dir:
         spaceship_frame = Path(frame).read_text(encoding="utf-8")
-        spaceship_frames += [spaceship_frame, spaceship_frame]
+        spaceship_frames += [spaceship_frame] * 2
 
     spaceship_row, spaceship_column = 12, 50
 
