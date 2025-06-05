@@ -11,7 +11,6 @@ class Obstacle:
         self.uid = uid
 
     def get_bounding_box_frame(self):
-        # increment box size to compensate obstacle movement
         rows, columns = self.rows_size + 1, self.columns_size + 1
         return "\n".join(_get_bounding_box_lines(rows, columns))
 
